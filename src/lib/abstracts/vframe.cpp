@@ -35,6 +35,9 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
         std::istreambuf_iterator<char>(entry),
         std::istreambuf_iterator<char>()});
     std::string line;
+    bool newPrimitive = false, newLight = false;
+    render::objectBuilder newObject;
+
     while (std::getline(stream, line)) {
         if (!line.size()) {
             continue;
@@ -42,8 +45,24 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
         std::stringstream ss(line);
         std::string command;
         ss >> command;
-        if (command == "NEW_PRIMITIVE") {
-            break;
+        if (command == "NEW_PRIMITIVE" || command == "NEW_LIGHT") {
+            if (newPrimitive) {
+                auto res = newObject.finalize();
+                if (res) {
+                    result.objects_.push_back(res);
+                }
+                newObject.clear();
+            }
+            newPrimitive = command == "NEW_PRIMITIVE";
+            newLight = command == "NEW_LIGHT";
+            continue;
+        }
+        if (newPrimitive) {
+            newObject.enrich(line);
+            continue;
+        }
+        if (newLight) {
+            continue;
         }
         if (command == "DIMENSIONS") {
             ss >> frameWidth >> frameHeight;
@@ -89,6 +108,13 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
         if (res) {
             result.Scene::objects_.push_back(res);
         }
+    }
+    if (newPrimitive) {
+        auto res = newObject.finalize();
+        if (res) {
+            result.objects_.push_back(res);
+        }
+        newObject.clear();
     }
     (void)(completeness); // macOS ti che rugaeshsya na unused???
     assert((completeness & VFrameHeaders::MINIMAL_COMPLETE) == VFrameHeaders::MINIMAL_COMPLETE);

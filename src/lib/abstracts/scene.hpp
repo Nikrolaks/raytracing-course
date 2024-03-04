@@ -20,6 +20,7 @@ public:
     render::color color(const math::ray& ray, const render::color& alternative);
 protected:
     std::vector<std::shared_ptr<render::object>> objects_;
+    size_t maxRecursionDepth_;
 };
 
 } // namespace raytracing::abs
