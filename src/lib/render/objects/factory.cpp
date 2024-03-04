@@ -12,7 +12,7 @@ objectFactory::objectFactory() {
     USE_OBJECT(plane);
     USE_OBJECT(ellipsoid);
     USE_OBJECT(box);
-};
+}
 
 objectFactory::objectFactory(
     const std::string& name,
@@ -30,6 +30,6 @@ std::shared_ptr<object> objectFactory::generate(std::stringstream stream) {
         return nullptr;
     }
     return collection_[name](stream);
-};
+}
 
 } // namespace raytracing::render::objects
