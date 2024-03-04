@@ -12,7 +12,7 @@ std::shared_ptr<box> box::fromStream(std::stringstream& stream) {
     return std::make_shared<box>(s);
 }
 
-std::optional<long double> box::intersection(const math::ray& ray) const {
+std::optional<float> box::intersection(const math::ray& ray) const {
     auto prepared = prepareRay(ray);
 
     auto

@@ -13,8 +13,8 @@ render::pixelColor& Canvas::at(size_t i, size_t j) {
 math::vec2 Canvas::relative(size_t i, size_t j) {
     assert(i < height_ && j < width_);
     return math::vec2{
-        (2.f * (long double(j) + 0.5f) / width_) - 1.f,
-        -(2.f * (long double(i) + 0.5f) / height_) + 1.f
+        (2.f * (float(j) + 0.5f) / width_) - 1.f,
+        -(2.f * (float(i) + 0.5f) / height_) + 1.f
     };
 }
 

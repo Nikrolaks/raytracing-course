@@ -13,7 +13,7 @@ public:
     plane(math::vec3 normal) : normal_(normal) {}
     static std::shared_ptr<plane> fromStream(std::stringstream& stream);
 
-    std::optional<long double> intersection(const math::ray& ray) const override;
+    std::optional<float> intersection(const math::ray& ray) const override;
 private:
     math::vec3 normal_;
 };

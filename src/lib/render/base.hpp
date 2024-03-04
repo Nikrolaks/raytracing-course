@@ -5,7 +5,7 @@
 namespace raytracing::render {
 
 struct color {
-    long double red, green, blue;
+    float red, green, blue;
 
     color& operator=(const math::vec3& vec) {
         red = vec.x();

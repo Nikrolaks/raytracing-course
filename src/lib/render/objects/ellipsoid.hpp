@@ -13,7 +13,7 @@ public:
     ellipsoid(math::vec3 radius) : radius_(radius) {}
     static std::shared_ptr<ellipsoid> fromStream(std::stringstream& stream);
 
-    std::optional<long double> intersection(const math::ray& ray) const override;
+    std::optional<float> intersection(const math::ray& ray) const override;
 private:
     math::vec3 radius_;
 };

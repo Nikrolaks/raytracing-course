@@ -14,7 +14,7 @@ public:
 protected:
     math::vec3 position_;
     math::CoordSystem cs_;
-    long double forwardX_, forwardY_;
+    float forwardX_, forwardY_;
 };
 
 } // namespace raytracing::abs

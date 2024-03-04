@@ -89,7 +89,7 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
     }
     assert((completeness & VFrameHeaders::MINIMAL_COMPLETE) == VFrameHeaders::MINIMAL_COMPLETE);
     result.Camera::cs_ = math::CoordSystem(cameraRight, cameraUp, cameraForward);
-    long double ratio = (long double)(frameHeight) / frameWidth;
+    float ratio = (float)(frameHeight) / frameWidth;
     result.Camera::forwardY_ = 2.f * std::atanl(std::tanl(result.Camera::forwardX_ * 0.5f) * ratio);
     return result;
 }

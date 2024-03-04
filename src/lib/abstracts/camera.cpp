@@ -4,8 +4,8 @@ namespace raytracing::abs {
 
 math::ray Camera::sight(const math::vec2& pixel) {
     math::vec3 cofs{
-        pixel.x() * std::tanl(forwardX_ / 2.f),
-        pixel.y() * std::tanl(forwardY_ / 2.f),
+        pixel.x() * std::tan(forwardX_ / 2.f),
+        pixel.y() * std::tan(forwardY_ / 2.f),
         1.f
     };
 

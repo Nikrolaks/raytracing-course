@@ -12,7 +12,7 @@ std::shared_ptr<plane> plane::fromStream(std::stringstream& stream) {
     return std::make_shared<plane>(n);
 }
 
-std::optional<long double> plane::intersection(const math::ray& ray) const {
+std::optional<float> plane::intersection(const math::ray& ray) const {
     auto prepared = prepareRay(ray);
 
     auto t = -(prepared.origin() * normal_) / (prepared.direction() * normal_);

@@ -12,7 +12,7 @@ std::shared_ptr<ellipsoid> ellipsoid::fromStream(std::stringstream& stream) {
     return std::make_shared<ellipsoid>(r);
 }
 
-std::optional<long double> ellipsoid::intersection(const math::ray& ray) const {
+std::optional<float> ellipsoid::intersection(const math::ray& ray) const {
     auto prepared = prepareRay(ray);
 
     auto
@@ -30,7 +30,7 @@ std::optional<long double> ellipsoid::intersection(const math::ray& ray) const {
         return std::nullopt;
     }
 
-    d = std::sqrtl(d);
+    d = std::sqrt(d);
     auto 
         t1 = (-b - d) / a,
         t2 = (-b + d) / a;

@@ -16,15 +16,15 @@ public:
     vec(const vec& another) { std::copy_n(another.components_, dims, components_); }
     vec& operator=(const vec& another) { std::copy_n(another.components_, dims, components_); return *this; }
 
-    long double length2() const {
-        long double length2 = 0;
+    float length2() const {
+        float length2 = 0;
         for (size_t i = 0; i < dims; ++i) {
             length2 += components_[i] * components_[i];
         }
         return length2;
     }
 
-    long double length() const {
+    float length() const {
         return sqrt(length2());
     }
 
@@ -68,11 +68,11 @@ public:
         return result;
     }
 
-    long double max() const {
+    float max() const {
         return *std::max_element(components_, components_ + dims);
     }
 
-    long double min() const {
+    float min() const {
         return *std::min_element(components_, components_ + dims);
     }
 
@@ -83,14 +83,14 @@ public:
         return *this;
     }
 
-    vec& operator*=(long double scalar) {
+    vec& operator*=(float scalar) {
         for (size_t i = 0; i < dims; ++i) {
             components_[i] *= scalar;
         }
         return *this;
     }
 
-    vec& operator/=(long double scalar) {
+    vec& operator/=(float scalar) {
         return *this *= 1.f / scalar;
     }
 
@@ -101,8 +101,8 @@ public:
         return *this;
     }
 
-    long double operator*(const vec& other) const {
-        long double res = 0;
+    float operator*(const vec& other) const {
+        float res = 0;
         for (size_t i = 0; i < dims; ++i) {
             res += components_[i] * other.components_[i];
         }
@@ -112,27 +112,27 @@ public:
     vec operator-() const { return *this * (-1); }
     vec operator+(const vec& oth) const { vec res(*this); res += oth; return res; }
     vec operator-(const vec& oth) const { vec res(*this); res -= oth; return res; }
-    vec operator*(long double scalar) const { vec res(*this); res *= scalar; return res; }
-    vec operator/(long double scalar) const { vec res(*this); res /= scalar; return res; }
+    vec operator*(float scalar) const { vec res(*this); res *= scalar; return res; }
+    vec operator/(float scalar) const { vec res(*this); res /= scalar; return res; }
 
 protected:
-    long double components_[dims];
+    float components_[dims];
 };
 
 class vec2 : public vec<2> {
 public:
     vec2() = default;
     vec2(const vec<2>& v) : vec<2>(v) {}
-    vec2(long double x, long double y) {
+    vec2(float x, float y) {
         components_[0] = x;
         components_[1] = y;
     }
 
-    long double x() const {
+    float x() const {
         return components_[0];
     }
 
-    long double y() const {
+    float y() const {
         return components_[1];
     }
 
@@ -148,21 +148,21 @@ class vec3 : public vec<3> {
 public:
     vec3() = default;
     vec3(const vec<3>& v) : vec<3>(v) {}
-    vec3(long double x, long double y, long double z) {
+    vec3(float x, float y, float z) {
         components_[0] = x;
         components_[1] = y;
         components_[2] = z;
     }
 
-    long double x() const {
+    float x() const {
         return components_[0];
     }
 
-    long double y() const {
+    float y() const {
         return components_[1];
     }
 
-    long double z() const {
+    float z() const {
         return components_[2];
     }
 };
@@ -171,26 +171,26 @@ class vec4 : public vec<4> {
 public:
     vec4() = default;
     vec4(const vec<4>& v) : vec<4>(v) {}
-    vec4(long double x, long double y, long double z, long double w) {
+    vec4(float x, float y, float z, float w) {
         components_[0] = x;
         components_[1] = y;
         components_[2] = z;
         components_[3] = w;
     }
 
-    long double x() const {
+    float x() const {
         return components_[0];
     }
 
-    long double y() const {
+    float y() const {
         return components_[1];
     }
 
-    long double z() const {
+    float z() const {
         return components_[2];
     }
 
-    long double w() const {
+    float w() const {
         return components_[3];
     }
 };
@@ -207,6 +207,6 @@ vec<dims> min(const vec<dims>& u, const vec<dims>& v) { return vec<dims>::min(u,
 vec3 cross(const vec3& u, const vec3& v);
 
 vec3 rotate(const vec3& u, const vec4& rotation);
-vec3 rotate(const vec3& u, const vec3& axis, long double angle);
+vec3 rotate(const vec3& u, const vec3& axis, float angle);
 
 } // namespace raytracing::math

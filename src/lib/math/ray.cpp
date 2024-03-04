@@ -13,7 +13,7 @@ ray& ray::rotate(const vec4& rotation) {
     return *this;
 }
 
-ray& ray::rotate(const vec3& axis, long double angle) {
+ray& ray::rotate(const vec3& axis, float angle) {
     origin_ = math::rotate(origin_, axis, angle);
     direction_ = math::rotate(direction_, axis, angle);
     return *this;

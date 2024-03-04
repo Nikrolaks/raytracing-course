@@ -12,8 +12,7 @@ vec3 cross(const vec3& u, const vec3& v) {
 
 vec3 rotate(const vec3& u, const vec4& rotation) {
     vec3 v{ rotation.x(), rotation.y(), rotation.z() };
-    long double 
-        t = rotation.w();
+    float t = rotation.w();
 
     return
         v * (v * u) * 2.f
@@ -21,13 +20,13 @@ vec3 rotate(const vec3& u, const vec4& rotation) {
         + cross(v, u) * 2.f * t;
 }
 
-vec3 rotate(const vec3& u, const vec3& axis, long double angle) {
-    long double sin = std::sinl(angle) / 2.f;
+vec3 rotate(const vec3& u, const vec3& axis, float angle) {
+    float sin = std::sin(angle) / 2.f;
     return rotate(u, {
         axis.x() * sin,
         axis.y()* sin,
         axis.z()* sin,
-        std::cosl(angle / 2.f)});
+        std::cos(angle / 2.f)});
 }
 
 } // namespace raytracing::math

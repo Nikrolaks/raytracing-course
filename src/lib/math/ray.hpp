@@ -15,7 +15,7 @@ public:
 
     ray& translate(const vec3& shift);
     ray& rotate(const vec4& rotation);
-    ray& rotate(const vec3& axis, long double angle);
+    ray& rotate(const vec3& axis, float angle);
 
 private:
     vec3 origin_;

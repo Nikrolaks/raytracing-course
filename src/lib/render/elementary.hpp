@@ -17,7 +17,7 @@ class object {
 public:
     static std::shared_ptr<object> fromStream(std::stringstream& stream);
 
-    virtual std::optional<long double> intersection(const math::ray& ray) const { return std::nullopt; }
+    virtual std::optional<float> intersection(const math::ray& ray) const { return std::nullopt; }
 
     color coloring() { return clr_; }
 
