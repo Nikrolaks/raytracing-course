@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-./build/raytracer "$1" "$2"
+./build/Release/raytracer "$1" "$2"
