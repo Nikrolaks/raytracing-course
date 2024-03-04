@@ -43,11 +43,7 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
         std::string command;
         ss >> command;
         if (command == "NEW_PRIMITIVE") {
-            auto res = render::object::fromStream(stream);
-            if (res) {
-                result.Scene::objects_.push_back(res);
-            }
-            continue;
+            break;
         }
         if (command == "DIMENSIONS") {
             ss >> frameWidth >> frameHeight;
@@ -86,6 +82,12 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
             ss >> result.Camera::forwardX_;
             completeness |= VFrameHeaders::CAMERA_FOV_X;
             continue;
+        }
+    }
+    while (stream) {
+        auto res = render::object::fromStream(stream);
+        if (res) {
+            result.Scene::objects_.push_back(res);
         }
     }
     assert((completeness & VFrameHeaders::MINIMAL_COMPLETE) == VFrameHeaders::MINIMAL_COMPLETE);

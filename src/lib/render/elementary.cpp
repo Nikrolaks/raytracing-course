@@ -9,10 +9,16 @@ std::shared_ptr<object> object::fromStream(std::stringstream& stream) {
     object base;
     std::shared_ptr<object> result;
     std::string line;
-    while (std::getline(stream, line) && line.size() > 0) {
+    while (std::getline(stream, line)) {
+        if (!line.size()) {
+            continue;
+        }
         std::stringstream ss(line);
         std::string command;
         ss >> command;
+        if (command == "NEW_PRIMITIVE") {
+            break;
+        }
         if (command == "POSITION") {
             ss >> base.position_;
             continue;
