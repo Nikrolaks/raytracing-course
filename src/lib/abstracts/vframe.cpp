@@ -27,11 +27,12 @@ enum VFrameHeaders {
 
 VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
     VFrame result;
-    size_t frameWidth, frameHeight;
+    size_t frameWidth = 0, frameHeight = 0;
     math::vec3 cameraRight, cameraUp, cameraForward;
     size_t completeness = 0;
+    std::ifstream entry(file);
     std::stringstream stream(std::string{
-        std::istreambuf_iterator<char>(std::ifstream{ file }),
+        std::istreambuf_iterator<char>(entry),
         std::istreambuf_iterator<char>()});
     std::string line;
     while (std::getline(stream, line)) {
@@ -90,7 +91,7 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
     assert((completeness & VFrameHeaders::MINIMAL_COMPLETE) == VFrameHeaders::MINIMAL_COMPLETE);
     result.Camera::cs_ = math::CoordSystem(cameraRight, cameraUp, cameraForward);
     float ratio = (float)(frameHeight) / frameWidth;
-    result.Camera::forwardY_ = 2.f * std::atanl(std::tanl(result.Camera::forwardX_ * 0.5f) * ratio);
+    result.Camera::forwardY_ = 2.f * std::atan(std::tan(result.Camera::forwardX_ * 0.5f) * ratio);
     return result;
 }
 

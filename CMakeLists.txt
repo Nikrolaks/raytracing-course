@@ -38,9 +38,20 @@ set(SOURCES
 
 add_library(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/src/lib)
+if(MSVC)
+  target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+else()
+  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+
 
 add_executable(raytracer src/bin/main.cpp)
 target_link_libraries(raytracer ${PROJECT_NAME})
+if(MSVC)
+  target_compile_options(raytracer PRIVATE /W4 /WX)
+else()
+  target_compile_options(raytracer PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
 
 foreach(source IN LISTS SOURCES)
     get_filename_component(source_path "${source}" PATH)

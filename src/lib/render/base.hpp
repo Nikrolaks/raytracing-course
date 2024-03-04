@@ -21,9 +21,9 @@ struct pixelColor {
     uint8_t red, green, blue;
 
     pixelColor& operator=(const color& clr) {
-        red = clr.red * 255;
-        green = clr.green * 255;
-        blue = clr.blue * 255;
+        red = uint8_t(clr.red * 255);
+        green = uint8_t(clr.green * 255);
+        blue = uint8_t(clr.blue * 255);
 
         return *this;
     }
