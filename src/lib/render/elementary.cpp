@@ -18,8 +18,9 @@ std::shared_ptr<object> object::fromStream(std::stringstream& stream) {
             continue;
         }
         if (command == "ROTATION") {
-            ss >> base.rotation_;
-            base.rotation_.normalize();
+            math::vec4 rotation;
+            ss >> rotation;
+            base.rotation_ = rotation.normalize();
             continue;
         }
         if (command == "COLOR") {
@@ -40,7 +41,7 @@ std::shared_ptr<object> object::fromStream(std::stringstream& stream) {
 
 math::ray object::prepareRay(const math::ray& ray) const {
     math::ray result(ray);
-    return result.translate(-position_).rotate(rotation_);
+    return result.translate(-position_).rotate(rotation_.conjugate());
 }
 
 } // namespace raytracing::render

@@ -15,7 +15,7 @@ std::shared_ptr<plane> plane::fromStream(std::stringstream& stream) {
 std::optional<float> plane::intersection(const math::ray& ray) const {
     auto prepared = prepareRay(ray);
 
-    auto t = -(prepared.origin() * normal_) / (prepared.direction() * normal_);
+    auto t = -dot(prepared.origin(), normal_) / dot(prepared.direction(), normal_);
 
     if (t < 0.f) {
         return std::nullopt;

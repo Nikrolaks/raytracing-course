@@ -22,7 +22,7 @@ std::optional<float> ellipsoid::intersection(const math::ray& ray) const {
 
     auto
         a = v.length2(),
-        b = u * v,
+        b = dot(u, v),
         c = u.length2(),
         d = b * b - a * (c - 1.f);
 

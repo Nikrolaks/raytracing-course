@@ -44,6 +44,14 @@ public:
         return result;
     }
 
+    static float dot(const vec& u, const vec& v) {
+        float result = 0.f;
+        for (size_t i = 0; i < dims; ++i) {
+            result += u.components_[i] * v.components_[i];
+        }
+        return result;
+    }
+
     static vec adamara(const vec& u, const vec& v) {
         vec result;
         for (size_t i = 0; i < dims; ++i) {
@@ -99,14 +107,6 @@ public:
             components_[i] -= other.components_[i];
         }
         return *this;
-    }
-
-    float operator*(const vec& other) const {
-        float res = 0;
-        for (size_t i = 0; i < dims; ++i) {
-            res += components_[i] * other.components_[i];
-        }
-        return res;
     }
 
     vec operator-() const { return *this * (-1); }
@@ -195,6 +195,54 @@ public:
     }
 };
 
+class quaternion {
+public:
+    quaternion(const vec4& vec) : ijk_(vec.x(), vec.y(), vec.z()), w_(vec.w()) {}
+    quaternion(const vec3& v, float w) : ijk_(v), w_(w) {}
+    quaternion(const quaternion& other) : ijk_(other.ijk_), w_(other.w_) {}
+
+    quaternion& operator=(const quaternion& other) {
+        ijk_ = other.ijk_;
+        w_ = other.w_;
+        return *this;
+    }
+    quaternion& operator=(const vec4& v) {
+        ijk_ = vec3(v.x(), v.y(), v.z());
+        w_ = v.w();
+        return *this;
+    }
+
+    operator vec4() const {
+        return vec4(
+            ijk_.x(),
+            ijk_.y(),
+            ijk_.z(),
+            w_
+        );
+    }
+
+    vec3 imaginary() const {
+        return ijk_;
+    }
+
+    float real() const {
+        return w_;
+    }
+
+    quaternion conjugate() const;
+    quaternion& normalize();
+
+    quaternion operator*(float scalar) const;
+    quaternion operator*(const vec3& v) const;
+    quaternion operator*(const quaternion& q) const;
+private:
+    vec3 ijk_;
+    float w_;
+};
+
+template<size_t dims>
+float dot(const vec<dims>& u, const vec<dims>& v) { return vec<dims>::dot(u, v); }
+
 template<size_t dims>
 vec<dims> adamara(const vec<dims>& u, const vec<dims>& v) { return vec<dims>::adamara(u, v); }
 
@@ -206,7 +254,7 @@ vec<dims> min(const vec<dims>& u, const vec<dims>& v) { return vec<dims>::min(u,
 
 vec3 cross(const vec3& u, const vec3& v);
 
-vec3 rotate(const vec3& u, const vec4& rotation);
+vec3 rotate(const vec3& u, const quaternion& rotation);
 vec3 rotate(const vec3& u, const vec3& axis, float angle);
 
 } // namespace raytracing::math

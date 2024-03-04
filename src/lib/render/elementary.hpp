@@ -25,7 +25,7 @@ protected:
     math::ray prepareRay(const math::ray& ray) const;
 
     math::vec3 position_ = { 0, 0, 0 };
-    math::vec4 rotation_ = { 0, 0, 0, 1 };
+    math::quaternion rotation_ = math::vec4{ 0, 0, 0, 1 };
     color clr_;
 };
 
