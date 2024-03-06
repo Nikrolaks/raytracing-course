@@ -4,15 +4,25 @@
 
 namespace raytracing::render {
 
+constexpr float INF = 1e9;
+
 struct color {
     float red, green, blue;
 
-    color& operator=(const math::vec3& vec) {
-        red = vec.x();
-        green = vec.y();
-        blue = vec.z();
+    color() = default;
+    color(float r, float g, float b) : red(r), green(g), blue(b) {}
+    color(const math::vec3& v) : red(v.x()), green(v.y()), blue(v.z()) {}
+
+    color& operator=(const math::vec3& v) {
+        red = v.x();
+        green = v.y();
+        blue = v.z();
 
         return *this;
+    }
+
+    operator math::vec3() const {
+        return { red, green, blue };
     }
 };
 
@@ -20,13 +30,7 @@ struct color {
 struct pixelColor {
     uint8_t red, green, blue;
 
-    pixelColor& operator=(const color& clr) {
-        red = uint8_t(clr.red * 255);
-        green = uint8_t(clr.green * 255);
-        blue = uint8_t(clr.blue * 255);
-
-        return *this;
-    }
+    pixelColor& operator=(const color& clr);
 };
 #pragma pack(pop)
 

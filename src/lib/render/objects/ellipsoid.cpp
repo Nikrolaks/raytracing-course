@@ -12,7 +12,7 @@ std::shared_ptr<ellipsoid> ellipsoid::fromStream(std::stringstream& stream) {
     return std::make_shared<ellipsoid>(r);
 }
 
-std::optional<float> ellipsoid::intersection(const math::ray& ray) const {
+std::optional<intersection> ellipsoid::intersect(const math::ray& ray) const {
     auto prepared = prepareRay(ray);
 
     auto
@@ -39,10 +39,26 @@ std::optional<float> ellipsoid::intersection(const math::ray& ray) const {
         return std::nullopt;
     }
 
+    intersection result;
+    result.distance = t1;
+    result.color = color_;
+
     if (t1 < 0.f) {
-        t1 = t2;
+        result.inside = true;
+        result.distance = t2;
     }
-    return t1;
+
+    result.normal = at(ray.origin() + ray.direction() * result.distance);
+    if (result.inside) {
+        result.normal *= -1.f;
+    }
+    result.normal = rotate(result.normal, rotation_);
+
+    return result;
+}
+
+math::vec3 ellipsoid::at(const math::vec3& point) const {
+    return adamara(point, adamara(radius_, radius_).invert()).normalize();
 }
 
 REGISTRY_OBJECT_IMPL(ellipsoid, "ELLIPSOID")

@@ -18,7 +18,6 @@ private:
     VFrame() = default;
 
     render::Canvas canvas_;
-    render::color backgroundColor_{0, 0, 0};
 };
 
 } // namespace raytracing::abs

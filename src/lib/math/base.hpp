@@ -5,6 +5,8 @@
 
 namespace raytracing::math {
 
+float sign(float value);
+
 template <size_t dims>
 class vec {
 public:
@@ -84,11 +86,61 @@ public:
         return *std::min_element(components_, components_ + dims);
     }
 
+    vec& majorate() {
+        auto major = std::max_element(components_, components_ + dims,
+            [](float left, float right) {
+                return std::abs(left) < std::abs(right); });
+        size_t major_pos = major - components_;
+        float major_value = *major;
+        *this = math::vec3();
+        components_[major_pos] = sign(major_value);
+
+        return *this;
+    }
+
+    vec& minorate() {
+        auto minor = std::min_element(components_, components_ + dims,
+            [](float left, float right) {
+                return std::abs(left) < std::abs(right); });
+        size_t minor_pos = minor - components_;
+        float minor_value = *minor;
+        *this = math::vec3();
+        components_[minor_pos] = sign(minor_value);
+
+        return *this;
+    }
+
+    static vec pow(const vec& v, float q) {
+        vec result;
+        for (size_t i = 0; i < dims; ++i) {
+            result.components_[i] = std::powf(v.components_[i], q);
+        }
+        return result;
+    }
+
     vec& operator+=(const vec& other) {
         for (size_t i = 0; i < dims; ++i) {
             components_[i] += other.components_[i];
         }
         return *this;
+    }
+
+    vec& operator+=(float shift) {
+        for (size_t i = 0; i < dims; ++i) {
+            components_[i] += shift;
+        }
+        return *this;
+    }
+
+    vec& operator-=(const vec& other) {
+        for (size_t i = 0; i < dims; ++i) {
+            components_[i] -= other.components_[i];
+        }
+        return *this;
+    }
+
+    vec& operator-=(float shift) {
+        return *this += -shift;
     }
 
     vec& operator*=(float scalar) {
@@ -102,16 +154,14 @@ public:
         return *this *= 1.f / scalar;
     }
 
-    vec& operator-=(const vec& other) {
-        for (size_t i = 0; i < dims; ++i) {
-            components_[i] -= other.components_[i];
-        }
-        return *this;
-    }
-
     vec operator-() const { return *this * (-1); }
+
     vec operator+(const vec& oth) const { vec res(*this); res += oth; return res; }
+    vec operator+(float shift) const { vec res(*this); res += shift; return res; }
+
     vec operator-(const vec& oth) const { vec res(*this); res -= oth; return res; }
+    vec operator-(float shift) const { vec res(*this); res -= shift; return res; }
+
     vec operator*(float scalar) const { vec res(*this); res *= scalar; return res; }
     vec operator/(float scalar) const { vec res(*this); res /= scalar; return res; }
 
@@ -126,6 +176,10 @@ public:
     vec2(float x, float y) {
         components_[0] = x;
         components_[1] = y;
+    }
+
+    operator vec<2>() const {
+        return *this;
     }
 
     float x() const {
@@ -154,6 +208,10 @@ public:
         components_[2] = z;
     }
 
+    operator vec<3>() const {
+        return *this;
+    }
+
     float x() const {
         return components_[0];
     }
@@ -176,6 +234,10 @@ public:
         components_[1] = y;
         components_[2] = z;
         components_[3] = w;
+    }
+
+    operator vec<4>() const {
+        return *this;
     }
 
     float x() const {
@@ -242,6 +304,9 @@ private:
 
 template<size_t dims>
 float dot(const vec<dims>& u, const vec<dims>& v) { return vec<dims>::dot(u, v); }
+
+template<size_t dims>
+vec<dims> pow(const vec<dims>& u, float q) { return vec<dims>::pow(u, q); }
 
 template<size_t dims>
 vec<dims> adamara(const vec<dims>& u, const vec<dims>& v) { return vec<dims>::adamara(u, v); }

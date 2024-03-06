@@ -12,7 +12,7 @@ std::shared_ptr<box> box::fromStream(std::stringstream& stream) {
     return std::make_shared<box>(s);
 }
 
-std::optional<float> box::intersection(const math::ray& ray) const {
+std::optional<intersection> box::intersect(const math::ray& ray) const {
     auto prepared = prepareRay(ray);
 
     auto
@@ -25,10 +25,27 @@ std::optional<float> box::intersection(const math::ray& ray) const {
         return std::nullopt;
     }
 
+    intersection result;
+    result.distance = t1;
+    result.color = color_;
+
     if (t1 < 0.f) {
-        t1 = t2;
+        result.inside = true;
+        result.distance = t2;
     }
-    return t1;
+
+    result.normal = at(ray.origin() + ray.direction() * result.distance);
+    if (result.inside) {
+        result.normal *= -1.f;
+    }
+    result.normal = rotate(result.normal, rotation_);
+
+    return result;
+}
+
+math::vec3 box::at(const math::vec3& point) const {
+    math::vec3 result = adamara(point, size_.invert());
+    return result.majorate();
 }
 
 REGISTRY_OBJECT_IMPL(box, "BOX")
