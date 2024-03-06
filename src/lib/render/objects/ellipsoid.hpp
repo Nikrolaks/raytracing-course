@@ -8,12 +8,14 @@
 
 namespace raytracing::render::objects {
 
-class ellipsoid : public object {
+class ellipsoid final : public object {
 public:
     ellipsoid(math::vec3 radius) : radius_(radius) {}
     static std::shared_ptr<ellipsoid> fromStream(std::stringstream& stream);
 
     std::optional<float> intersection(const math::ray& ray) const override;
+
+    ~ellipsoid() override = default;
 private:
     math::vec3 radius_;
 };

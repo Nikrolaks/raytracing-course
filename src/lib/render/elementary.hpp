@@ -21,6 +21,7 @@ public:
 
     color coloring() { return clr_; }
 
+    virtual ~object() = default;
 protected:
     math::ray prepareRay(const math::ray& ray) const;
 

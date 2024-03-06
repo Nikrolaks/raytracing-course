@@ -90,6 +90,7 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
             result.Scene::objects_.push_back(res);
         }
     }
+    (void)(completeness); // macOS ti che rugaeshsya na unused???
     assert((completeness & VFrameHeaders::MINIMAL_COMPLETE) == VFrameHeaders::MINIMAL_COMPLETE);
     result.Camera::cs_ = math::CoordSystem(cameraRight, cameraUp, cameraForward);
     float ratio = (float)(frameHeight) / frameWidth;

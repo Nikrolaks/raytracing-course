@@ -8,12 +8,14 @@
 
 namespace raytracing::render::objects {
 
-class plane : public object {
+class plane final : public object {
 public:
     plane(math::vec3 normal) : normal_(normal) {}
     static std::shared_ptr<plane> fromStream(std::stringstream& stream);
 
     std::optional<float> intersection(const math::ray& ray) const override;
+
+    ~plane() override = default;
 private:
     math::vec3 normal_;
 };
