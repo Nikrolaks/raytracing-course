@@ -6,6 +6,12 @@
 
 namespace raytracing::render::objects {
 
+size_t Counter<plane>::count_ = 0;
+
+plane::plane(const math::vec3& normal)
+    : object(Counter<plane>::birth("PLANE"))
+    , normal_(normal) { normal_.normalize(); }
+
 std::shared_ptr<plane> plane::fromStream(std::stringstream& stream) {
     math::vec3 n;
     stream >> n;

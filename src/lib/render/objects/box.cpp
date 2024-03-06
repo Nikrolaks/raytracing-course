@@ -6,6 +6,12 @@
 
 namespace raytracing::render::objects {
 
+size_t Counter<box>::count_ = 0;
+
+box::box(const math::vec3& size) 
+    : object(Counter<box>::birth("BOX"))
+    , size_(size) {}
+
 std::shared_ptr<box> box::fromStream(std::stringstream& stream) {
     math::vec3 s;
     stream >> s;
@@ -34,7 +40,7 @@ std::optional<intersection> box::intersect(const math::ray& ray) const {
         result.distance = t2;
     }
 
-    result.normal = at(ray.origin() + ray.direction() * result.distance);
+    result.normal = at(prepared.origin() + prepared.direction() * result.distance);
     if (result.inside) {
         result.normal *= -1.f;
     }

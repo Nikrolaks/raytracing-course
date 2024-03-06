@@ -17,6 +17,16 @@ namespace raytracing::render {
 
 class object {
 public:
+    object& operator=(const object& other) {
+        position_ = other.position_;
+        rotation_ = other.rotation_;
+        color_ = other.color_;
+        type_ = other.type_;
+        ior_ = other.ior_;
+
+        return *this;
+    }
+
     enum ObjectType {
         DIFFUSE,
         METALLIC,
@@ -36,14 +46,10 @@ public:
     }
 
     virtual ~object() = default;
+
+    const std::string name;
 protected:
-    object() = default;
-    object(const object& other)
-        : position_(other.position_)
-        , rotation_(other.rotation_)
-        , color_(other.color_)
-        , type_(other.type_)
-        , ior_(other.ior_) {}
+    object(const std::string& name) : name(name) {}
     math::ray prepareRay(const math::ray& ray) const;
     virtual math::vec3 at(const math::vec3&) const { return math::vec3(); }
 
@@ -140,11 +146,12 @@ private:
 
 class objectBuilder : private object {
 public:
+    objectBuilder() : object("objectBuilder") {}
     void enrich(const std::string& line);
     std::shared_ptr<object> finalize();
 
     void clear() {
-        *static_cast<object*>(this) = clearInstance;
+        *this = clearInstance;
         building = nullptr;
     }
 private:

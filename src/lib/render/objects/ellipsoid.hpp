@@ -10,7 +10,7 @@ namespace raytracing::render::objects {
 
 class ellipsoid final : public object {
 public:
-    ellipsoid(math::vec3 radius) : radius_(radius) {}
+    ellipsoid(const math::vec3& radius);
     static std::shared_ptr<ellipsoid> fromStream(std::stringstream& stream);
 
     std::optional<intersection> intersect(const math::ray& ray) const override;

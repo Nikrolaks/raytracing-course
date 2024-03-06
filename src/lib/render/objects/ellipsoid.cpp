@@ -6,6 +6,12 @@
 
 namespace raytracing::render::objects {
 
+size_t Counter<ellipsoid>::count_ = 0;
+
+ellipsoid::ellipsoid(const math::vec3& radius) 
+    : object(Counter<ellipsoid>::birth("ELLIPSOID"))
+    , radius_(radius) {}
+
 std::shared_ptr<ellipsoid> ellipsoid::fromStream(std::stringstream& stream) {
     math::vec3 r;
     stream >> r;
@@ -48,7 +54,7 @@ std::optional<intersection> ellipsoid::intersect(const math::ray& ray) const {
         result.distance = t2;
     }
 
-    result.normal = at(ray.origin() + ray.direction() * result.distance);
+    result.normal = at(prepared.origin() + prepared.direction() * result.distance);
     if (result.inside) {
         result.normal *= -1.f;
     }

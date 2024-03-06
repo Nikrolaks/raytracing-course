@@ -12,10 +12,10 @@ namespace raytracing::abs {
 class Scene {
 public:
     Scene() = default;
-    Scene(const Scene& another) : objects_(another.objects_) {}
-    Scene(Scene&& another) : objects_(std::move(another.objects_)) {}
-    Scene& operator=(const Scene& another) { objects_ = another.objects_; return *this; }
-    Scene& operator=(Scene&& another) { objects_ = std::move(another.objects_); return *this; }
+    Scene(const Scene& another) = default;
+    Scene(Scene&& another) = default;
+    Scene& operator=(const Scene& another) = default;
+    Scene& operator=(Scene&& another) noexcept = default;
 
     std::optional<render::color> color(const math::ray& ray);
 protected:

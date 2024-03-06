@@ -150,6 +150,10 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
 }
 
 const render::Canvas& VFrame::render() {
+    canvas_.at(540, 435) =
+        Scene::color(
+            Camera::sight(canvas_.relative(459, 1307)))
+        .value_or(Scene::backgroundColor_);
     for (size_t i = 0; i < canvas_.height(); ++i) {
         for (size_t j = 0; j < canvas_.width(); ++j) {
             canvas_.at(i, j) = 

@@ -1,4 +1,5 @@
 #include "scene.hpp"
+#include <iostream>
 
 namespace raytracing::abs {
 
@@ -59,11 +60,12 @@ std::optional<render::color> Scene::color(const math::ray& ray) {
     case render::object::ObjectType::METALLIC:
         reflectDir =
             ray.direction() - info.normal * 2 * math::dot(info.normal, ray.direction());
+        reflectDir.normalize();
         reflectColor = color(ray.deeper(point + reflectDir * INDENT, reflectDir))
             .value_or(backgroundColor_);
 
         ret = math::adamara<3>(nearest->coloring(), reflectColor);
-        break;
+        return ret;
     case render::object::ObjectType::DIELECTRIC:
         float icos = -math::dot(info.normal, ray.direction());
         float phi = 1.f;
@@ -74,22 +76,23 @@ std::optional<render::color> Scene::color(const math::ray& ray) {
         float reflectiveness = phi / psi;
         float osin = reflectiveness * std::sqrt(1 - icos * icos);
 
-        float coff;
+        float reflectionCoefficient;
         if (osin >= 1.f) {
-            coff = 1.f;
+            reflectionCoefficient = 1.f;
         }
         else {
             float rho = std::pow((phi - psi) / (phi + psi), 2.f);
-            coff = rho + (1 - rho) * std::pow(1 - icos, 5.f);
+            reflectionCoefficient = rho + (1 - rho) * std::pow(1 - icos, 5.f);
         }
 
         // reflection
         reflectDir =
             ray.direction() - info.normal * 2 * math::dot(info.normal, ray.direction());
+        reflectDir.normalize();
         reflectColor = color(ray.deeper(point + reflectDir * INDENT, reflectDir))
             .value_or(backgroundColor_);
 
-        ret = (math::vec3)((math::vec3)(reflectColor) * coff);
+        ret = (math::vec3)((math::vec3)(reflectColor) * reflectionCoefficient);
 
         if (osin >= 1.f) {
             break;
@@ -97,16 +100,18 @@ std::optional<render::color> Scene::color(const math::ray& ray) {
 
         // refraction
         float ocos = std::sqrt(1 - osin * osin);
-        coff = phi / psi;
+        float coff = phi / psi;
 
         auto refractionDir = ray.direction() * coff + info.normal * (coff * icos - ocos);
+        refractionDir.normalize();
         auto refractColor = color(ray.deeper(point + refractionDir * INDENT, refractionDir));
-        auto totalRefractColor = (math::vec3)(refractColor.value_or(backgroundColor_)) * (1.f - coff);
+        auto totalRefractColor = 
+            (math::vec3)(refractColor.value_or(backgroundColor_)) * (1.f - reflectionCoefficient);
         if (refractColor && !info.inside) {
             totalRefractColor = math::adamara<3>(nearest->coloring(), totalRefractColor);
         }
         ret = (math::vec3)(ret) + totalRefractColor;
-        break;
+        return ret;
     }
 
     for (const auto& light : lights_) {

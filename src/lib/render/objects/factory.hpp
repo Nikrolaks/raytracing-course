@@ -41,4 +41,17 @@ private:
 template<class objectT>
 struct inserter : private objectFactory {};
 
+template <class objectT>
+class Counter {
+public:
+    static std::string birth(const std::string& name) {
+        std::stringstream ss;
+        ss << name << "_" << count_;
+        ++count_;
+        return ss.str();
+    }
+private:
+    static size_t count_;
+};
+
 } // namespace raytracing::render::objects
