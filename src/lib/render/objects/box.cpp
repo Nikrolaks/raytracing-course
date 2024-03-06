@@ -6,11 +6,8 @@
 
 namespace raytracing::render::objects {
 
-size_t Counter<box>::count_ = 0;
-
-box::box(const math::vec3& size) 
-    : object(Counter<box>::birth("BOX"))
-    , size_(size) {}
+box::box(const math::vec3& size)
+    : size_(size) {}
 
 std::shared_ptr<box> box::fromStream(std::stringstream& stream) {
     math::vec3 s;

@@ -47,9 +47,8 @@ public:
 
     virtual ~object() = default;
 
-    const std::string name;
 protected:
-    object(const std::string& name) : name(name) {}
+    object() = default;
     math::ray prepareRay(const math::ray& ray) const;
     virtual math::vec3 at(const math::vec3&) const { return math::vec3(); }
 
@@ -146,7 +145,7 @@ private:
 
 class objectBuilder : private object {
 public:
-    objectBuilder() : object("objectBuilder") {}
+    objectBuilder() {}
     void enrich(const std::string& line);
     std::shared_ptr<object> finalize();
 

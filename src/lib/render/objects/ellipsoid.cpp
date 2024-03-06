@@ -6,11 +6,8 @@
 
 namespace raytracing::render::objects {
 
-size_t Counter<ellipsoid>::count_ = 0;
-
-ellipsoid::ellipsoid(const math::vec3& radius) 
-    : object(Counter<ellipsoid>::birth("ELLIPSOID"))
-    , radius_(radius) {}
+ellipsoid::ellipsoid(const math::vec3& radius)
+    : radius_(radius) {}
 
 std::shared_ptr<ellipsoid> ellipsoid::fromStream(std::stringstream& stream) {
     math::vec3 r;
