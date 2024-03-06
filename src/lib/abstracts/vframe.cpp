@@ -20,7 +20,10 @@ enum VFrameHeaders {
     CAMERA_UP = (1 << 4),
     CAMERA_FORWARD = (1 << 5),
     CAMERA_FOV_X = (1 << 6),
-    MINIMAL_COMPLETE = (1 << 7) - 1
+    AMBIENT_LIGHT = (1 << 7),
+    RAY_DEPTH = (1 << 8),
+
+    MINIMAL_COMPLETE = (1 << 9) - 1
 };
 
 } // namespace
@@ -35,6 +38,10 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
         std::istreambuf_iterator<char>(entry),
         std::istreambuf_iterator<char>()});
     std::string line;
+    bool newPrimitive = false, newLight = false;
+    render::objectBuilder bObject;
+    render::lightBuilder bLight;
+
     while (std::getline(stream, line)) {
         if (!line.size()) {
             continue;
@@ -42,8 +49,24 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
         std::stringstream ss(line);
         std::string command;
         ss >> command;
-        if (command == "NEW_PRIMITIVE") {
-            break;
+        if (command == "NEW_PRIMITIVE" || command == "NEW_LIGHT") {
+            if (newPrimitive) {
+                auto res = bObject.finalize();
+                if (res) {
+                    result.objects_.push_back(res);
+                }
+                bObject.clear();
+            }
+            if (newLight) {
+                auto res = bLight.finalize();
+                if (res) {
+                    result.lights_.push_back(res);
+                }
+                bLight.clear();
+            }
+            newPrimitive = command == "NEW_PRIMITIVE";
+            newLight = command == "NEW_LIGHT";
+            continue;
         }
         if (command == "DIMENSIONS") {
             ss >> frameWidth >> frameHeight;
@@ -51,11 +74,23 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
             completeness |= VFrameHeaders::DIMENSIONS;
             continue;
         }
+        if (command == "RAY_DEPTH") {
+            ss >> result.maxRecursionDepth_;
+            completeness |= VFrameHeaders::RAY_DEPTH;
+            continue;
+        }
         if (command == "BG_COLOR") {
             math::vec3 vec;
             ss >> vec;
             result.backgroundColor_ = vec;
             completeness |= VFrameHeaders::BG_COLOR;
+            continue;
+        }
+        if (command == "AMBIENT_LIGHT") {
+            math::vec3 vec;
+            ss >> vec;
+            result.ambientLight_ = vec;
+            completeness |= VFrameHeaders::AMBIENT_LIGHT;
             continue;
         }
         if (command == "CAMERA_POSITION") {
@@ -83,12 +118,28 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
             completeness |= VFrameHeaders::CAMERA_FOV_X;
             continue;
         }
-    }
-    while (stream) {
-        auto res = render::object::fromStream(stream);
-        if (res) {
-            result.Scene::objects_.push_back(res);
+        if (newPrimitive) {
+            bObject.enrich(line);
+            continue;
         }
+        if (newLight) {
+            bLight.enrich(line);
+            continue;
+        }
+    }
+    if (newPrimitive) {
+        auto res = bObject.finalize();
+        if (res) {
+            result.objects_.push_back(res);
+        }
+        bObject.clear();
+    }
+    if (newLight) {
+        auto res = bLight.finalize();
+        if (res) {
+            result.lights_.push_back(res);
+        }
+        bLight.clear();
     }
     (void)(completeness); // macOS ti che rugaeshsya na unused???
     assert((completeness & VFrameHeaders::MINIMAL_COMPLETE) == VFrameHeaders::MINIMAL_COMPLETE);
@@ -101,8 +152,10 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
 const render::Canvas& VFrame::render() {
     for (size_t i = 0; i < canvas_.height(); ++i) {
         for (size_t j = 0; j < canvas_.width(); ++j) {
-            canvas_.at(i, j) = Scene::color(
-                Camera::sight(canvas_.relative(i, j)), backgroundColor_);
+            canvas_.at(i, j) = 
+                Scene::color(
+                    Camera::sight(canvas_.relative(i, j)))
+                .value_or(Scene::backgroundColor_);
         }
     }
     return canvas_;

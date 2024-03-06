@@ -27,10 +27,12 @@ set(SOURCES
     src/lib/render/objects/box.cpp
     
     src/lib/render/base.hpp
+    src/lib/render/base.cpp
     src/lib/render/canvas.cpp
     src/lib/render/canvas.hpp
     src/lib/render/elementary.cpp
     src/lib/render/elementary.hpp
+    src/lib/render/intersection.hpp
 
     src/lib/utils/readers.cpp
     src/lib/utils/utils.hpp

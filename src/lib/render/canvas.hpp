@@ -50,7 +50,7 @@ public:
     static void toPPM(std::filesystem::path file, const Canvas& canvas);
 
 private:
-    size_t width_, height_;
+    size_t width_ = 0, height_ = 0;
     std::vector<render::pixelColor> data_;
 };
 

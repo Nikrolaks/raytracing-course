@@ -2,6 +2,16 @@
 
 namespace raytracing::math {
 
+float sign(float value) {
+    if (value > 0.f) {
+        return 1.f;
+    }
+    if (value < 0.f) {
+        return -1.f;
+    }
+    return 0.f;
+}
+
 quaternion quaternion::conjugate() const {
     return quaternion(-ijk_, w_);
 }
