@@ -57,13 +57,12 @@ std::optional<render::color> Scene::color(const math::ray& ray) {
         ret = math::adamara<3>(nearest->coloring(), ambientLight_);
         break;
     case render::object::ObjectType::METALLIC:
-        reflectDir = 
+        reflectDir =
             ray.direction() - info.normal * 2 * math::dot(info.normal, ray.direction());
         reflectColor = color(ray.deeper(point + reflectDir * INDENT, reflectDir))
             .value_or(backgroundColor_);
 
-        ret = (math::vec3)(info.color)
-            + math::adamara<3>(nearest->coloring(), reflectColor);
+        ret = math::adamara<3>(nearest->coloring(), reflectColor);
         break;
     case render::object::ObjectType::DIELECTRIC:
         float icos = -math::dot(info.normal, ray.direction());
@@ -90,8 +89,7 @@ std::optional<render::color> Scene::color(const math::ray& ray) {
         reflectColor = color(ray.deeper(point + reflectDir * INDENT, reflectDir))
             .value_or(backgroundColor_);
 
-        ret = (math::vec3)(info.color)
-            + math::adamara<3>(nearest->coloring(), reflectColor) * coff;
+        ret = (math::vec3)((math::vec3)(reflectColor) * coff);
 
         if (osin >= 1.f) {
             break;
@@ -103,9 +101,9 @@ std::optional<render::color> Scene::color(const math::ray& ray) {
 
         auto refractionDir = ray.direction() * coff + info.normal * (coff * icos - ocos);
         auto refractColor = color(ray.deeper(point + refractionDir * INDENT, refractionDir));
-        auto totalRefractColor = math::adamara<3>(nearest->coloring(), refractColor.value_or(backgroundColor_)) * (1.f - coff);
+        auto totalRefractColor = (math::vec3)(refractColor.value_or(backgroundColor_)) * (1.f - coff);
         if (refractColor && !info.inside) {
-            totalRefractColor = math::adamara<3>(totalRefractColor, nearest->coloring());
+            totalRefractColor = math::adamara<3>(nearest->coloring(), totalRefractColor);
         }
         ret = (math::vec3)(ret) + totalRefractColor;
         break;
@@ -119,8 +117,8 @@ std::optional<render::color> Scene::color(const math::ray& ray) {
         if (blocking) {
             continue;
         }
-        auto totalColor = 
-            math::adamara<3>(info.color, light->coloring(distance)) 
+        auto totalColor =
+            math::adamara<3>(nearest->coloring(), light->coloring(distance))
             * std::max(0.f, math::dot(dirToLight, info.normal));
         ret = (math::vec3)(ret) + totalColor;
     }

@@ -70,7 +70,7 @@ class directLight final : public light {
 public:
     directLight(const color& intensity, const math::vec3& direction)
         : light(intensity)
-        , direction_(direction) {}
+        , direction_(direction) { direction_.normalize(); }
 
     math::vec3 to(const math::vec3&) const override { return direction_; }
     float distance(const math::vec3&) const override { return INF; }
