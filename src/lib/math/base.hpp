@@ -113,7 +113,7 @@ public:
     static vec pow(const vec& v, float q) {
         vec result;
         for (size_t i = 0; i < dims; ++i) {
-            result.components_[i] = std::powf(v.components_[i], q);
+            result.components_[i] = std::pow(v.components_[i], q);
         }
         return result;
     }
