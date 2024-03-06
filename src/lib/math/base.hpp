@@ -92,7 +92,7 @@ public:
                 return std::abs(left) < std::abs(right); });
         size_t major_pos = major - components_;
         float major_value = *major;
-        *this = math::vec3();
+        *this = vec<dims>();
         components_[major_pos] = sign(major_value);
 
         return *this;
@@ -104,7 +104,7 @@ public:
                 return std::abs(left) < std::abs(right); });
         size_t minor_pos = minor - components_;
         float minor_value = *minor;
-        *this = math::vec3();
+        *this = vec<dims>();
         components_[minor_pos] = sign(minor_value);
 
         return *this;
@@ -178,10 +178,6 @@ public:
         components_[1] = y;
     }
 
-    operator vec<2>() const {
-        return *this;
-    }
-
     float x() const {
         return components_[0];
     }
@@ -208,10 +204,6 @@ public:
         components_[2] = z;
     }
 
-    operator vec<3>() const {
-        return *this;
-    }
-
     float x() const {
         return components_[0];
     }
@@ -234,10 +226,6 @@ public:
         components_[1] = y;
         components_[2] = z;
         components_[3] = w;
-    }
-
-    operator vec<4>() const {
-        return *this;
     }
 
     float x() const {

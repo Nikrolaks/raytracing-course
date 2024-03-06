@@ -59,25 +59,28 @@ public:
     virtual math::vec3 to(const math::vec3&) const { return math::vec3(); }
     virtual float distance(const math::vec3&) const { return 0.f; }
     virtual color coloring(float) const { return intensity_; }
+
+    virtual ~light() = default;
 protected:
     light(const color& intensity) : intensity_(intensity) {}
     color intensity_;
 };
 
-class directLight : public light {
+class directLight final : public light {
 public:
-    directLight(const color& intensity, const math::vec3& direction) 
+    directLight(const color& intensity, const math::vec3& direction)
         : light(intensity)
         , direction_(direction) {}
 
     math::vec3 to(const math::vec3&) const override { return direction_; }
     float distance(const math::vec3&) const override { return INF; }
 
+    ~directLight() override = default;
 protected:
     math::vec3 direction_;
 };
 
-class pointLight : public light {
+class pointLight final : public light {
 public:
     pointLight(
         const color& intensity,
@@ -87,18 +90,21 @@ public:
         , position_(position)
         , attenuation_(attenuation) {}
 
-    math::vec3 to(const math::vec3& point) const override { 
+    math::vec3 to(const math::vec3& point) const override {
         return (position_ - point).normalize();
     }
 
-    float distance(const math::vec3& point) const override { 
+    float distance(const math::vec3& point) const override {
         return (position_ - point).length();
     }
 
     color coloring(float distance) const override {
-        return (math::vec3)(light::intensity_) * (1.f / 
-            math::dot(attenuation_, math::vec3(1, distance, distance * distance)));
+        return math::vec3(
+            (math::vec3)(light::intensity_) * (1.f / math::dot(
+                attenuation_, math::vec3(1, distance, distance * distance))));
     }
+
+    ~pointLight() override = default;
 protected:
     math::vec3 position_;
     math::vec3 attenuation_;
@@ -123,7 +129,7 @@ private:
         POINT_ATTENUATION = (1 << 3),
         POINT_MINIMAL_COMPLETE = POINT_POSITION | POINT_ATTENUATION | COMMON_INTENSITY
     };
-    
+
     size_t completeness_ = 0;
     // zaebalo, delau vtupuy
     color intensity_;
