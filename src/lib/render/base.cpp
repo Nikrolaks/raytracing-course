@@ -1,5 +1,7 @@
 #include "base.hpp"
 
+#include <cassert>
+
 namespace raytracing::render {
 
 namespace {
@@ -31,13 +33,21 @@ math::vec3 aces_tonemap(const math::vec3& v) {
 
 } // namespace
 
-pixelColor& pixelColor::operator=(const color& clr) {
-    auto corrected = math::vec3(pow(aces_tonemap(clr), GAMMA));
-    red = uint8_t(corrected.x() * 255.f);
-    green = uint8_t(corrected.y() * 255.f);
-    blue = uint8_t(corrected.z() * 255.f);
+void integrableColor::enrich(const math::vec3& clr) {
+    result_ += clr;
+    ++bins_;
+}
 
-    return *this;
+color integrableColor::get() const {
+    assert(bins_ > 0);
+    return color(result_ * (1.f / (float)(bins_)));
+}
+
+pixelColor::pixelColor(const integrableColor& clr) {
+    auto corrected = math::vec3(pow(aces_tonemap(clr.get()), GAMMA));
+    red = uint8_t(std::clamp(corrected.x() * 255.f, 0.f, 255.f));
+    green = uint8_t(std::clamp(corrected.y() * 255.f, 0.f, 255.f));
+    blue = uint8_t(std::clamp(corrected.z() * 255.f, 0.f, 255.f));
 }
 
 } // namespace raytracing::render

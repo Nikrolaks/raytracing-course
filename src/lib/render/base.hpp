@@ -4,7 +4,7 @@
 
 namespace raytracing::render {
 
-constexpr float INF = 1e9;
+constexpr float INF = 1e5;
 
 struct color {
     float red, green, blue;
@@ -26,11 +26,20 @@ struct color {
     }
 };
 
+class integrableColor {
+public:
+    void enrich(const math::vec3& clr);
+    color get() const;
+private:
+    size_t bins_ = 0;
+    math::vec3 result_{ 0.0, 0.0, 0.0 };
+};
+
 #pragma pack(push, 1)
 struct pixelColor {
     uint8_t red, green, blue;
 
-    pixelColor& operator=(const color& clr);
+    pixelColor(const integrableColor& clr);
 };
 #pragma pack(pop)
 

@@ -3,6 +3,14 @@ project(raytracing)
 
 set(CMAKE_CXX_STANDARD 17)
 
+find_package(OpenMP)
+if (OpenMP_CXX_FOUND)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+else()
+    message(FATAL_ERROR "OpenMP not found! You need OpenMP for speedup on multicore CPUs!")
+endif()
+
 set(SOURCES
     src/lib/abstracts/camera.hpp
     src/lib/abstracts/camera.cpp
@@ -14,6 +22,8 @@ set(SOURCES
     src/lib/math/base.hpp
     src/lib/math/base.cpp
     src/lib/math/coord_system.hpp
+    src/lib/math/global_random.hpp
+    src/lib/math/global_random.cpp
     src/lib/math/ray.hpp
     src/lib/math/ray.cpp
 
@@ -41,10 +51,11 @@ set(SOURCES
 add_library(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/src/lib)
 if(MSVC)
-  target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+  # target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX) # OpenMP and VS17 >:{
 else()
   target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
+target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
 
 
 add_executable(raytracer src/bin/main.cpp)

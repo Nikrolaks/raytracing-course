@@ -26,7 +26,6 @@ std::optional<intersection> plane::intersect(const math::ray& ray) const {
     
     intersection result;
     result.distance = t;
-    result.color = color_;
     result.normal = normal_;
     if (dot(ray.direction(), normal_) > 0.f) {
         result.inside = true;
