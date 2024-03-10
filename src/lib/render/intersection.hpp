@@ -7,7 +7,6 @@ namespace raytracing::render {
 struct intersection {
     float distance;
     math::vec3 normal;
-    render::color color;
     bool inside = false;
 };
 

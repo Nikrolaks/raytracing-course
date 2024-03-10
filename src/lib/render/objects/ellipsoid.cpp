@@ -44,7 +44,6 @@ std::optional<intersection> ellipsoid::intersect(const math::ray& ray) const {
 
     intersection result;
     result.distance = t1;
-    result.color = color_;
 
     if (t1 < 0.f) {
         result.inside = true;

@@ -1,10 +1,12 @@
 #include "vframe.hpp"
 
+#include <math/global_random.hpp>
 #include <utils/utils.hpp>
 
 #include <cassert>
 #include <fstream>
 #include <iterator>
+#include <random>
 #include <string>
 #include <sstream>
 
@@ -13,17 +15,17 @@ namespace raytracing::abs {
 namespace {
 
 enum VFrameHeaders {
-    DIMENSIONS = (1 << 0),
-    BG_COLOR = (1 << 1),
-    CAMERA_POSITION = (1 << 2),
-    CAMERA_RIGHT = (1 << 3),
-    CAMERA_UP = (1 << 4),
-    CAMERA_FORWARD = (1 << 5),
-    CAMERA_FOV_X = (1 << 6),
-    AMBIENT_LIGHT = (1 << 7),
-    RAY_DEPTH = (1 << 8),
+    DIMENSIONS = (1LL << 0),
+    BG_COLOR = (1LL << 1),
+    CAMERA_POSITION = (1LL << 2),
+    CAMERA_RIGHT = (1LL << 3),
+    CAMERA_UP = (1LL << 4),
+    CAMERA_FORWARD = (1LL << 5),
+    CAMERA_FOV_X = (1LL << 6),
+    RAY_DEPTH = (1LL << 7),
+    SAMPLES = (1LL << 8),
 
-    MINIMAL_COMPLETE = (1 << 9) - 1
+    MINIMAL_COMPLETE = (1LL << 9) - 1
 };
 
 } // namespace
@@ -38,10 +40,8 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
         std::istreambuf_iterator<char>(entry),
         std::istreambuf_iterator<char>()});
     std::string line;
-    bool newPrimitive = false, newLight = false;
+    bool newPrimitive = false;
     render::objectBuilder bObject;
-    render::lightBuilder bLight;
-
     while (std::getline(stream, line)) {
         if (!line.size()) {
             continue;
@@ -49,7 +49,7 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
         std::stringstream ss(line);
         std::string command;
         ss >> command;
-        if (command == "NEW_PRIMITIVE" || command == "NEW_LIGHT") {
+        if (command == "NEW_PRIMITIVE") {
             if (newPrimitive) {
                 auto res = bObject.finalize();
                 if (res) {
@@ -57,20 +57,11 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
                 }
                 bObject.clear();
             }
-            if (newLight) {
-                auto res = bLight.finalize();
-                if (res) {
-                    result.lights_.push_back(res);
-                }
-                bLight.clear();
-            }
-            newPrimitive = command == "NEW_PRIMITIVE";
-            newLight = command == "NEW_LIGHT";
+            newPrimitive = true;
             continue;
         }
         if (command == "DIMENSIONS") {
-            ss >> frameWidth >> frameHeight;
-            result.canvas_ = render::Canvas(frameWidth, frameHeight);
+            ss >> result.canvasWidth_ >> result.canvasHeight_;
             completeness |= VFrameHeaders::DIMENSIONS;
             continue;
         }
@@ -79,18 +70,16 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
             completeness |= VFrameHeaders::RAY_DEPTH;
             continue;
         }
+        if (command == "SAMPLES") {
+            ss >> result.samplesCount_;
+            completeness |= VFrameHeaders::SAMPLES;
+            continue;
+        }
         if (command == "BG_COLOR") {
             math::vec3 vec;
             ss >> vec;
             result.backgroundColor_ = vec;
             completeness |= VFrameHeaders::BG_COLOR;
-            continue;
-        }
-        if (command == "AMBIENT_LIGHT") {
-            math::vec3 vec;
-            ss >> vec;
-            result.ambientLight_ = vec;
-            completeness |= VFrameHeaders::AMBIENT_LIGHT;
             continue;
         }
         if (command == "CAMERA_POSITION") {
@@ -122,10 +111,6 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
             bObject.enrich(line);
             continue;
         }
-        if (newLight) {
-            bLight.enrich(line);
-            continue;
-        }
     }
     if (newPrimitive) {
         auto res = bObject.finalize();
@@ -134,31 +119,32 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
         }
         bObject.clear();
     }
-    if (newLight) {
-        auto res = bLight.finalize();
-        if (res) {
-            result.lights_.push_back(res);
-        }
-        bLight.clear();
-    }
     (void)(completeness); // macOS ti che rugaeshsya na unused???
     assert((completeness & VFrameHeaders::MINIMAL_COMPLETE) == VFrameHeaders::MINIMAL_COMPLETE);
     result.Camera::cs_ = math::CoordSystem(cameraRight, cameraUp, cameraForward);
-    float ratio = (float)(frameHeight) / frameWidth;
+    float ratio = (float)(result.canvasHeight_) / result.canvasWidth_;
     result.Camera::forwardY_ = 2.f * std::atan(std::tan(result.Camera::forwardX_ * 0.5f) * ratio);
     return result;
 }
 
-const render::Canvas& VFrame::render() {
-    for (size_t i = 0; i < canvas_.height(); ++i) {
-        for (size_t j = 0; j < canvas_.width(); ++j) {
-            canvas_.at(i, j) = 
-                Scene::color(
-                    Camera::sight(canvas_.relative(i, j)))
-                .value_or(Scene::backgroundColor_);
+render::Canvas VFrame::render() {
+    std::uniform_real_distribution pixelFormGenerator(-0.5f, 0.5f);
+    render::Canvas canvas(canvasWidth_, canvasHeight_);
+#pragma omp parallel for shared(pixelFormGenerator, canvas) collapse(3)
+    for (int64_t i = 0; i < (int64_t)(canvas.height()); ++i) {
+        for (int64_t j = 0; j < (int64_t)(canvas.width()); ++j) {
+            for (int64_t sample = 0; sample < (int64_t)(samplesCount_); ++sample) {
+                auto
+                    dx = pixelFormGenerator(math::GlobalRandomHolder::engine()),
+                    dy = pixelFormGenerator(math::GlobalRandomHolder::engine());
+                canvas.at(i, j).enrich(
+                    Scene::color(
+                        Camera::sight(canvas.relative(i, j, dx, dy)))
+                    .value_or(Scene::backgroundColor_));
+            }
         }
     }
-    return canvas_;
+    return canvas;
 }
 
 } // namespace raytracing::abs

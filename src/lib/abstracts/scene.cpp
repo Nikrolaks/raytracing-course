@@ -9,9 +9,7 @@ constexpr float INDENT = float(1e-4);
 
 } // namespace
 
-std::optional<Scene::SceneIntersection> Scene::intersect(
-    const math::ray& ray, float maxDistance, bool onlyExisting) {
-
+std::optional<Scene::SceneIntersection> Scene::intersect(const math::ray& ray, float maxDistance) {
     std::shared_ptr<render::object> nearest = nullptr;
     render::intersection last;
     last.distance = maxDistance;
@@ -23,9 +21,6 @@ std::optional<Scene::SceneIntersection> Scene::intersect(
         }
         last = *match;
         nearest = object;
-        if (onlyExisting) {
-            break;
-        }
     }
 
     if (!nearest) {
@@ -37,7 +32,7 @@ std::optional<Scene::SceneIntersection> Scene::intersect(
 
 std::optional<render::color> Scene::color(const math::ray& ray) {
     if (ray.deepness() >= maxRecursionDepth_) {
-        return render::color{0.f, 0.f, 0.f}; // total black
+        return std::nullopt;
     }
 
     auto result = intersect(ray);
@@ -55,7 +50,12 @@ std::optional<render::color> Scene::color(const math::ray& ray) {
 
     switch (nearest->type()) {
     case render::object::ObjectType::DIFFUSE:
-        ret = math::adamara<3>(nearest->coloring(), ambientLight_);
+        reflectDir = generator_(math::GlobalRandomHolder::engine());
+        if (math::dot(reflectDir, info.normal) < 0.f) {
+            reflectDir *= -1.f;
+        }
+        reflectColor = color(ray.deeper(point + reflectDir * INDENT, reflectDir)).value_or(backgroundColor_);
+        ret = nearest->emission() + math::adamara<3>(nearest->coloring(), reflectColor) * 2.f * math::dot(reflectDir, info.normal);
         break;
     case render::object::ObjectType::METALLIC:
         reflectDir =
@@ -64,7 +64,7 @@ std::optional<render::color> Scene::color(const math::ray& ray) {
         reflectColor = color(ray.deeper(point + reflectDir * INDENT, reflectDir))
             .value_or(backgroundColor_);
 
-        ret = math::adamara<3>(nearest->coloring(), reflectColor);
+        ret = nearest->emission() + math::adamara<3>(nearest->coloring(), reflectColor);
         return ret;
     case render::object::ObjectType::DIELECTRIC:
         float icos = -math::dot(info.normal, ray.direction());
@@ -76,56 +76,44 @@ std::optional<render::color> Scene::color(const math::ray& ray) {
         float reflectiveness = phi / psi;
         float osin = reflectiveness * std::sqrt(1 - icos * icos);
 
+        float effectVoice;
         float reflectionCoefficient;
         if (osin >= 1.f) {
+            effectVoice = 0.f;
             reflectionCoefficient = 1.f;
         }
         else {
             float rho = std::pow((phi - psi) / (phi + psi), 2.f);
             reflectionCoefficient = rho + (1 - rho) * std::pow(1 - icos, 5.f);
+            effectVoice = voicer_(math::GlobalRandomHolder::engine());
         }
 
-        // reflection
-        reflectDir =
-            ray.direction() - info.normal * 2 * math::dot(info.normal, ray.direction());
-        reflectDir.normalize();
-        reflectColor = color(ray.deeper(point + reflectDir * INDENT, reflectDir))
-            .value_or(backgroundColor_);
+        if (effectVoice < reflectionCoefficient) {
+            // reflection win
+            reflectDir =
+                ray.direction() - info.normal * 2 * math::dot(info.normal, ray.direction());
+            reflectDir.normalize();
+            reflectColor = color(ray.deeper(point + reflectDir * INDENT, reflectDir))
+                .value_or(backgroundColor_);
 
-        ret = (math::vec3)((math::vec3)(reflectColor) * reflectionCoefficient);
-
-        if (osin >= 1.f) {
-            break;
+            ret = nearest->emission() + (math::vec3)((math::vec3)(reflectColor)*reflectionCoefficient);
         }
+        else {
+            // refraction win
+            float ocos = std::sqrt(1 - osin * osin);
+            float coff = phi / psi;
 
-        // refraction
-        float ocos = std::sqrt(1 - osin * osin);
-        float coff = phi / psi;
-
-        auto refractionDir = ray.direction() * coff + info.normal * (coff * icos - ocos);
-        refractionDir.normalize();
-        auto refractColor = color(ray.deeper(point + refractionDir * INDENT, refractionDir));
-        auto totalRefractColor = 
-            (math::vec3)(refractColor.value_or(backgroundColor_)) * (1.f - reflectionCoefficient);
-        if (refractColor && !info.inside) {
-            totalRefractColor = math::adamara<3>(nearest->coloring(), totalRefractColor);
+            auto refractionDir = ray.direction() * coff + info.normal * (coff * icos - ocos);
+            refractionDir.normalize();
+            auto refractColor = color(ray.deeper(point + refractionDir * INDENT, refractionDir));
+            auto totalRefractColor =
+                (math::vec3)(refractColor.value_or(backgroundColor_)) * (1.f - reflectionCoefficient);
+            if (refractColor && !info.inside) {
+                totalRefractColor = math::adamara<3>(nearest->coloring(), totalRefractColor);
+            }
+            ret = nearest->emission() + totalRefractColor;
         }
-        ret = (math::vec3)(ret) + totalRefractColor;
-        return ret;
-    }
-
-    for (const auto& light : lights_) {
-        math::vec3 dirToLight = light->to(point);
-        float distance = light->distance(point);
-        auto blocking = intersect(
-            math::ray(point + dirToLight * INDENT, dirToLight), distance, true);
-        if (blocking) {
-            continue;
-        }
-        auto totalColor =
-            math::adamara<3>(nearest->coloring(), light->coloring(distance))
-            * std::max(0.f, math::dot(dirToLight, info.normal));
-        ret = (math::vec3)(ret) + totalColor;
+        break;
     }
 
     return ret;

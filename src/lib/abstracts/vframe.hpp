@@ -13,11 +13,12 @@ class VFrame : private Scene, Camera {
 public:
     static VFrame fromGLTF(const std::filesystem::path& filepath);
 
-    const render::Canvas& render();
+    render::Canvas render();
 private:
     VFrame() = default;
 
-    render::Canvas canvas_;
+    size_t samplesCount_;
+    size_t canvasWidth_, canvasHeight_;
 };
 
 } // namespace raytracing::abs
