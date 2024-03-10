@@ -40,7 +40,7 @@ void integrableColor::enrich(const math::vec3& clr) {
 
 color integrableColor::get() const {
     assert(bins_ > 0);
-    return result_ * (1.f / bins_);
+    return color(result_ * (1.f / (float)(bins_)));
 }
 
 pixelColor::pixelColor(const integrableColor& clr) {
