@@ -32,7 +32,6 @@ enum VFrameHeaders {
 
 VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
     VFrame result;
-    size_t frameWidth = 0, frameHeight = 0;
     math::vec3 cameraRight, cameraUp, cameraForward;
     size_t completeness = 0;
     std::ifstream entry(file);
