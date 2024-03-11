@@ -30,6 +30,8 @@ protected:
     size_t maxRecursionDepth_;
     render::color backgroundColor_;
 
+    std::shared_ptr<math::distribution> directionGenForDiffuse_;
+
     math::uniform_sphere_distribution generator_;
     std::uniform_real_distribution<float> voicer_{ 0.f, 1.f };
 };

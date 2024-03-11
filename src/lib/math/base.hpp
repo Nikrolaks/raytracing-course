@@ -46,6 +46,19 @@ public:
         return result;
     }
 
+    vec invertWithNaNtoZeros() const {
+        vec result;
+        for (size_t i = 0; i < dims; ++i) {
+            if (components_[i] == 0.f) {
+                result.components_[i] = 0.f;
+            }
+            else {
+                result.components_[i] = 1.f / components_[i];
+            }
+        }
+        return result;
+    }
+
     static float dot(const vec& u, const vec& v) {
         float result = 0.f;
         for (size_t i = 0; i < dims; ++i) {

@@ -45,17 +45,18 @@ std::optional<render::color> Scene::color(const math::ray& ray) {
 
     render::color ret{ 0.f, 0.f, 0.f };
 
+    float pdf = 0.f;
     math::vec3 reflectDir;
     render::color reflectColor;
 
     switch (nearest->type()) {
     case render::object::ObjectType::DIFFUSE:
-        reflectDir = generator_(math::GlobalRandomHolder::engine());
-        if (math::dot(reflectDir, info.normal) < 0.f) {
-            reflectDir *= -1.f;
+        while (pdf == 0.f) {
+            reflectDir = directionGenForDiffuse_->sample(point, info.normal);
+            pdf = directionGenForDiffuse_->pdf(point, info.normal, reflectDir);
         }
         reflectColor = color(ray.deeper(point + reflectDir * INDENT, reflectDir)).value_or(backgroundColor_);
-        ret = nearest->emission() + math::adamara<3>(nearest->coloring(), reflectColor) * 2.f * math::dot(reflectDir, info.normal);
+        ret = nearest->emission() + math::adamara<3>(nearest->coloring(), reflectColor) * math::dot(reflectDir, info.normal) / (float)(M_PI) / pdf;
         break;
     case render::object::ObjectType::METALLIC:
         reflectDir =

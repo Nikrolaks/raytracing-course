@@ -41,6 +41,7 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
     std::string line;
     bool newPrimitive = false;
     render::objectBuilder bObject;
+    std::vector<std::shared_ptr<math::distribution>> lights;
     while (std::getline(stream, line)) {
         if (!line.size()) {
             continue;
@@ -53,6 +54,9 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
                 auto res = bObject.finalize();
                 if (res) {
                     result.objects_.push_back(res);
+                    if (res->isLight()) {
+                        lights.push_back(res->distribution());
+                    }
                 }
                 bObject.clear();
             }
@@ -115,6 +119,9 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
         auto res = bObject.finalize();
         if (res) {
             result.objects_.push_back(res);
+            if (res->isLight()) {
+                lights.push_back(res->distribution());
+            }
         }
         bObject.clear();
     }
@@ -123,6 +130,18 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
     result.Camera::cs_ = math::CoordSystem(cameraRight, cameraUp, cameraForward);
     float ratio = (float)(result.canvasHeight_) / result.canvasWidth_;
     result.Camera::forwardY_ = 2.f * std::atan(std::tan(result.Camera::forwardX_ * 0.5f) * ratio);
+
+    if (lights.empty()) {
+        result.directionGenForDiffuse_ = std::make_shared<math::distributions::cosine>();
+    }
+    else {
+        result.directionGenForDiffuse_ = std::make_shared<math::distributions::mix>(
+            std::vector<std::shared_ptr<math::distribution>>{
+                std::make_shared<math::distributions::cosine>(),
+                std::make_shared<math::distributions::mix>(std::move(lights))
+        });
+    }
+
     return result;
 }
 

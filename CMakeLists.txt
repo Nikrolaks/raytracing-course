@@ -22,6 +22,8 @@ set(SOURCES
     src/lib/math/base.hpp
     src/lib/math/base.cpp
     src/lib/math/coord_system.hpp
+    src/lib/math/distributions.hpp
+    src/lib/math/distributions.cpp
     src/lib/math/global_random.hpp
     src/lib/math/global_random.cpp
     src/lib/math/ray.hpp

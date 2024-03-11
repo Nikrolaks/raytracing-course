@@ -6,8 +6,7 @@
 
 namespace raytracing::render::objects {
 
-ellipsoid::ellipsoid(const math::vec3& radius)
-    : radius_(radius) {}
+ellipsoid::ellipsoid(const math::vec3& radius) : radius_(radius) {}
 
 std::shared_ptr<ellipsoid> ellipsoid::fromStream(std::stringstream& stream) {
     math::vec3 r;
@@ -61,6 +60,46 @@ std::optional<intersection> ellipsoid::intersect(const math::ray& ray) const {
 
 math::vec3 ellipsoid::at(const math::vec3& point) const {
     return adamara(point, adamara(radius_, radius_).invert()).normalize();
+}
+
+ellipsoid::ellipsoidDistribution::ellipsoidDistribution(const ellipsoid& params)
+    : params_(params)
+    , r_(params_.radius_.x() * params_.radius_.y() * params_.radius_.z())
+{}
+
+math::vec3 ellipsoid::ellipsoidDistribution::sample(const math::vec3& point, const math::vec3&) {
+    return 
+        (math::rotate(math::adamara(gen_(math::GlobalRandomHolder::engine()), params_.radius_), params_.rotation_)
+            + params_.position_ - point).normalize();
+}
+
+float ellipsoid::ellipsoidDistribution::pdf(const math::vec3& point, const math::vec3&, const math::vec3& direction) {
+    auto pt1maybe = params_.intersect(math::ray(point, direction));
+    if (!pt1maybe) {
+        return 0.f;
+    }
+    math::vec3
+        y1 = point + direction * pt1maybe->distance,
+        y1c = math::adamara(math::rotate(y1 - params_.position_, params_.rotation_.conjugate()), params_.radius_.invert()), // Nx, Ny, Nz
+        spec1 = math::adamara(math::adamara(math::vec3(r_, r_, r_), params_.radius_.invert()), y1c); // NxRyRz, RxNyRz, RxRyNz
+
+    float p1 =
+        (0.5f * 0.5f * 0.5f / (4.f * (float)(M_PI) * spec1.length()))
+        * (pt1maybe->distance * pt1maybe->distance) / std::abs(math::dot(direction, pt1maybe->normal));
+
+    auto pt2maybe = params_.intersect(math::ray(y1 + direction * 1e-4, direction));
+    if (!pt2maybe) {
+        return p1;
+    }
+    math::vec3 y2 = y1 + direction * (1e-4 + pt2maybe->distance),
+        y2c = math::adamara(math::rotate(y2 - params_.position_, params_.rotation_.conjugate()), params_.radius_.invert()), // Nx, Ny, Nz
+        spec2 = math::adamara(math::adamara(math::vec3(r_, r_, r_), params_.radius_.invert()), y2c); // NxRyRz, RxNyRz, RxRyNz;
+    float distance2 = pt2maybe->distance + 1e-4 + pt1maybe->distance;
+    float p2 =
+        (0.5f * 0.5f * 0.5f / (4.f * (float)(M_PI) * spec2.length()))
+        * (distance2 * distance2) / std::abs(math::dot(direction, pt2maybe->normal));
+
+    return p1 + p2;
 }
 
 REGISTRY_OBJECT_IMPL(ellipsoid, "ELLIPSOID")
