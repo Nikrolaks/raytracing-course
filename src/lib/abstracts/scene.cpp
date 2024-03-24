@@ -49,14 +49,25 @@ std::optional<render::color> Scene::color(const math::ray& ray) {
     math::vec3 reflectDir;
     render::color reflectColor;
 
+    float cosinuse, coefficientuse;
+
     switch (nearest->type()) {
     case render::object::ObjectType::DIFFUSE:
-        while (pdf == 0.f) {
-            reflectDir = directionGenForDiffuse_->sample(point, info.normal);
-            pdf = directionGenForDiffuse_->pdf(point, info.normal, reflectDir);
+        ret = nearest->emission();
+
+        reflectDir = directionGenForDiffuse_->sample(point, info.normal);
+        pdf = directionGenForDiffuse_->pdf(point, info.normal, reflectDir);
+
+        cosinuse = math::dot(reflectDir, info.normal);
+
+        if (cosinuse <= 0.f || pdf <= 0.f) {
+            break;
         }
+
+        coefficientuse = (1.f / (float)(M_PI)) / pdf;
+
         reflectColor = color(ray.deeper(point + reflectDir * INDENT, reflectDir)).value_or(backgroundColor_);
-        ret = nearest->emission() + math::adamara<3>(nearest->coloring(), reflectColor) * math::dot(reflectDir, info.normal) / (float)(M_PI) / pdf;
+        ret = math::vec3(ret) + math::adamara<3>(nearest->coloring(), reflectColor) * cosinuse * coefficientuse;
         break;
     case render::object::ObjectType::METALLIC:
         reflectDir =

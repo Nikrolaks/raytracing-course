@@ -84,7 +84,7 @@ float ellipsoid::ellipsoidDistribution::pdf(const math::vec3& point, const math:
         spec1 = math::adamara(math::adamara(math::vec3(r_, r_, r_), params_.radius_.invert()), y1c); // NxRyRz, RxNyRz, RxRyNz
 
     float p1 =
-        (0.5f * 0.5f * 0.5f / (4.f * (float)(M_PI) * spec1.length()))
+        (1.f / (4.f * (float)(M_PI) * spec1.length()))
         * (pt1maybe->distance * pt1maybe->distance) / std::abs(math::dot(direction, pt1maybe->normal));
 
     auto pt2maybe = params_.intersect(math::ray(y1 + direction * 1e-4, direction));
@@ -96,7 +96,7 @@ float ellipsoid::ellipsoidDistribution::pdf(const math::vec3& point, const math:
         spec2 = math::adamara(math::adamara(math::vec3(r_, r_, r_), params_.radius_.invert()), y2c); // NxRyRz, RxNyRz, RxRyNz;
     float distance2 = pt2maybe->distance + 1e-4 + pt1maybe->distance;
     float p2 =
-        (0.5f * 0.5f * 0.5f / (4.f * (float)(M_PI) * spec2.length()))
+        (1.f / (4.f * (float)(M_PI) * spec2.length()))
         * (distance2 * distance2) / std::abs(math::dot(direction, pt2maybe->normal));
 
     return p1 + p2;

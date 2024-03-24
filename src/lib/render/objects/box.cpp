@@ -20,10 +20,11 @@ std::optional<intersection> box::intersect(const math::ray& ray) const {
     auto prepared = prepareRay(ray);
 
     auto
-        neu = adamara(-size_ - prepared.origin(), prepared.direction().invertWithNaNtoZeros()),
-        nev = adamara(size_ - prepared.origin(), prepared.direction().invertWithNaNtoZeros()),
+        neu = adamara(-size_ - prepared.origin(), prepared.direction().invert()),
+        nev = adamara(size_ - prepared.origin(), prepared.direction().invert()),
         u = min(neu, nev), v = max(neu, nev);
-    auto t1 = u.max(), t2 = v.min();
+    float t1 = u.maxmask(prepared.direction());
+    float t2 = v.minmask(prepared.direction());
 
     if (t1 > t2 || t2 < 0.f) {
         return std::nullopt;
@@ -85,10 +86,14 @@ float box::boxDistribution::pdf(const math::vec3& point, const math::vec3&, cons
     }
     math::vec3 y1 = point + direction * pt1maybe->distance;
     float p1 = 0.f;
+    float delitel = 8 * (math::dot(params_.size_, math::vec3(params_.size_.y(), params_.size_.z(), params_.size_.x())));
     if (pt1maybe->distance > 0.f) {
         p1 =
             (0.5f * 0.5f * 0.5f * std::abs(math::dot(params_.size_, pt1maybe->normal)) / w_)
             * (pt1maybe->distance * pt1maybe->distance) / std::abs(math::dot(direction, pt1maybe->normal));
+    }
+    else {
+        return 0.f;
     }
     
     auto pt2maybe = params_.intersect(math::ray(y1 + direction * 1e-4, direction));

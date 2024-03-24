@@ -29,7 +29,7 @@ public:
 
     virtual std::optional<intersection> intersect(const math::ray&) const { return std::nullopt; }
 
-    virtual bool isLight() const { return emission_.length() > 0.f; }
+    virtual bool isLight() const { return emission_.length2() > 0.f; }
 
     virtual std::shared_ptr<math::distribution> distribution() { assert(isLight()); return nullptr; }
 
