@@ -41,21 +41,21 @@ std::optional<intersection> ellipsoid::intersect(const math::ray& ray) const {
         return std::nullopt;
     }
 
-    intersection result;
-    result.distance = t1;
+    bool inside = false;
+    float distance = t1;
 
     if (t1 < 0.f) {
-        result.inside = true;
-        result.distance = t2;
+        inside = true;
+        distance = t2;
     }
 
-    result.normal = at(prepared.origin() + prepared.direction() * result.distance);
-    if (result.inside) {
-        result.normal *= -1.f;
+    math::vec3 normal = at(prepared.origin() + prepared.direction() * distance);
+    if (inside) {
+        normal *= -1.f;
     }
-    result.normal = rotate(result.normal, rotation_);
+    normal = rotate(normal, rotation_);
 
-    return result;
+    return intersection{ distance, normal, inside };
 }
 
 math::vec3 ellipsoid::at(const math::vec3& point) const {
