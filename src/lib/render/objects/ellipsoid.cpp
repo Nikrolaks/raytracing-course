@@ -65,6 +65,7 @@ math::vec3 ellipsoid::at(const math::vec3& point) const {
 ellipsoid::ellipsoidDistribution::ellipsoidDistribution(const ellipsoid& params)
     : params_(params)
     , r_(params_.radius_.x() * params_.radius_.y() * params_.radius_.z())
+    , helpfulVec3_(math::adamara(math::vec3(r_, r_, r_), params_.radius_.invert()))
 {}
 
 math::vec3 ellipsoid::ellipsoidDistribution::sample(const math::vec3& point, const math::vec3&) {
@@ -81,7 +82,7 @@ float ellipsoid::ellipsoidDistribution::pdf(const math::vec3& point, const math:
     math::vec3
         y1 = point + direction * pt1maybe->distance,
         y1c = math::adamara(math::rotate(y1 - params_.position_, params_.rotation_.conjugate()), params_.radius_.invert()), // Nx, Ny, Nz
-        spec1 = math::adamara(math::adamara(math::vec3(r_, r_, r_), params_.radius_.invert()), y1c); // NxRyRz, RxNyRz, RxRyNz
+        spec1 = math::adamara(helpfulVec3_, y1c); // NxRyRz, RxNyRz, RxRyNz
 
     float p1 =
         (1.f / (4.f * (float)(M_PI) * spec1.length()))
@@ -93,7 +94,7 @@ float ellipsoid::ellipsoidDistribution::pdf(const math::vec3& point, const math:
     }
     math::vec3 y2 = y1 + direction * (1e-4 + pt2maybe->distance),
         y2c = math::adamara(math::rotate(y2 - params_.position_, params_.rotation_.conjugate()), params_.radius_.invert()), // Nx, Ny, Nz
-        spec2 = math::adamara(math::adamara(math::vec3(r_, r_, r_), params_.radius_.invert()), y2c); // NxRyRz, RxNyRz, RxRyNz;
+        spec2 = math::adamara(helpfulVec3_, y2c); // NxRyRz, RxNyRz, RxRyNz;
     float distance2 = pt2maybe->distance + 1e-4 + pt1maybe->distance;
     float p2 =
         (1.f / (4.f * (float)(M_PI) * spec2.length()))

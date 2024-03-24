@@ -33,6 +33,7 @@ private:
     private:
         const ellipsoid& params_;
         float r_;
+        math::vec3 helpfulVec3_;
         math::uniform_sphere_distribution gen_;
     };
 

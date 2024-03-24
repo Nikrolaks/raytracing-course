@@ -55,6 +55,7 @@ math::vec3 box::at(const math::vec3& point) const {
 box::boxDistribution::boxDistribution(const box& params) 
     : params_(params)
     , w_(math::dot(params_.size_, math::vec3(1.f, 1.f, 1.f)))
+    , helpfulValue_(8.f * math::dot(params_.size_, math::vec3(params_.size_.y(), params_.size_.z(), params_.size_.x())))
     , facetGen_(0.f, w_) {}
 
 math::vec3 box::boxDistribution::sample(const math::vec3& point, const math::vec3&) {
@@ -86,13 +87,9 @@ float box::boxDistribution::pdf(const math::vec3& point, const math::vec3&, cons
     }
     math::vec3 y1 = point + direction * pt1maybe->distance;
     float p1 = 0.f;
+
     if (pt1maybe->distance > 0.f) {
-        p1 =
-            (0.5f * 0.5f * 0.5f * std::abs(math::dot(params_.size_, pt1maybe->normal)) / w_)
-            * (pt1maybe->distance * pt1maybe->distance) / std::abs(math::dot(direction, pt1maybe->normal));
-    }
-    else {
-        return 0.f;
+        p1 = (1.f / helpfulValue_) * (pt1maybe->distance * pt1maybe->distance) / std::abs(math::dot(direction, pt1maybe->normal));
     }
     
     auto pt2maybe = params_.intersect(math::ray(y1 + direction * 1e-4, direction));
@@ -100,9 +97,7 @@ float box::boxDistribution::pdf(const math::vec3& point, const math::vec3&, cons
         return p1;
     }
     float distance2 = pt2maybe->distance + 1e-4 + pt1maybe->distance;
-    float p2 =
-        (0.5f * 0.5f * 0.5f * std::abs(math::dot(params_.size_, pt2maybe->normal)) / w_)
-        * (distance2 * distance2) / std::abs(math::dot(direction, pt2maybe->normal));
+    float p2 = (1.f / helpfulValue_) * (distance2 * distance2) / std::abs(math::dot(direction, pt2maybe->normal));
 
     return p1 + p2;
 }

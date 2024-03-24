@@ -33,6 +33,7 @@ private:
     private:
         const box& params_;
         float w_;
+        float helpfulValue_;
         std::uniform_real_distribution<float> facetGen_;
         std::uniform_int_distribution<int> orderGen_{ 0, 1 };
         std::uniform_real_distribution<float> posGen_{ -1.f, 1.f };
