@@ -86,7 +86,6 @@ float box::boxDistribution::pdf(const math::vec3& point, const math::vec3&, cons
     }
     math::vec3 y1 = point + direction * pt1maybe->distance;
     float p1 = 0.f;
-    float delitel = 8 * (math::dot(params_.size_, math::vec3(params_.size_.y(), params_.size_.z(), params_.size_.x())));
     if (pt1maybe->distance > 0.f) {
         p1 =
             (0.5f * 0.5f * 0.5f * std::abs(math::dot(params_.size_, pt1maybe->normal)) / w_)
