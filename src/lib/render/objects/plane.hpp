@@ -15,6 +15,8 @@ public:
 
     std::optional<intersection> intersect(const math::ray& ray) const override;
 
+    bool isLight() const override { return false; }
+
     ~plane() override = default;
 protected:
     math::vec3 at(const math::vec3& point) const override;

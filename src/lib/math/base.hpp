@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 
 namespace raytracing::math {
@@ -46,6 +47,19 @@ public:
         return result;
     }
 
+    vec invertWithNaNtoZeros() const {
+        vec result;
+        for (size_t i = 0; i < dims; ++i) {
+            if (components_[i] == 0.f) {
+                result.components_[i] = 0.f;
+            }
+            else {
+                result.components_[i] = 1.f / components_[i];
+            }
+        }
+        return result;
+    }
+
     static float dot(const vec& u, const vec& v) {
         float result = 0.f;
         for (size_t i = 0; i < dims; ++i) {
@@ -84,6 +98,46 @@ public:
 
     float min() const {
         return *std::min_element(components_, components_ + dims);
+    }
+
+    // some strange operations... :/
+
+    float maxmask(const vec& mask) const {
+        assert(mask.length2() > 0.f);
+        bool noone = true;
+        float res;
+        for (size_t i = 0; i < dims; ++i) {
+            if (mask.components_[i] == 0.f) {
+                continue;
+            }
+            if (noone) {
+                noone = false;
+                res = components_[i];
+            }
+            else {
+                res = std::max(res, components_[i]);
+            }
+        }
+        return res;
+    }
+
+    float minmask(const vec& mask) const {
+        assert(mask.length2() > 0.f);
+        bool noone = true;
+        float res;
+        for (size_t i = 0; i < dims; ++i) {
+            if (mask.components_[i] == 0.f) {
+                continue;
+            }
+            if (noone) {
+                noone = false;
+                res = components_[i];
+            }
+            else {
+                res = std::min(res, components_[i]);
+            }
+        }
+        return res;
     }
 
     vec& majorate() {

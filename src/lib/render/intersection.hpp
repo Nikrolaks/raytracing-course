@@ -5,8 +5,8 @@
 namespace raytracing::render {
 
 struct intersection {
-    float distance;
-    math::vec3 normal;
+    float distance = 0.f;
+    math::vec3 normal = math::vec3(0, 0, 0);
     bool inside = false;
 };
 
