@@ -146,11 +146,11 @@ VFrame VFrame::fromGLTF(const std::filesystem::path& file) {
 }
 
 render::Canvas VFrame::render() {
-    std::uniform_real_distribution pixelFormGenerator(-0.5f, 0.5f);
     render::Canvas canvas(canvasWidth_, canvasHeight_);
-#pragma omp parallel for shared(pixelFormGenerator, canvas) collapse(3)
+#pragma omp parallel for collapse(2)
     for (int64_t i = 0; i < (int64_t)(canvas.height()); ++i) {
         for (int64_t j = 0; j < (int64_t)(canvas.width()); ++j) {
+            std::uniform_real_distribution pixelFormGenerator(-0.5f, 0.5f);
             for (int64_t sample = 0; sample < (int64_t)(samplesCount_); ++sample) {
                 auto
                     dx = pixelFormGenerator(math::GlobalRandomHolder::engine()),

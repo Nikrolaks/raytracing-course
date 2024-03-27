@@ -31,7 +31,7 @@ public:
     static std::minstd_rand& engine() { return engine_; }
 private:
     static GlobalRandomHolder instance_;
-    static std::minstd_rand engine_;
+    static thread_local std::minstd_rand engine_;
 };
 
 } // namespace raytracing::math
